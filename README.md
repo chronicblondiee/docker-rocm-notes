@@ -26,9 +26,32 @@ Host system requires only:
 
 No ROCm installation needed on host - all ROCm libraries run inside containers.
 
-### Basic Usage
+### Using Docker Compose (Recommended)
 
-**llama.cpp (Recommended for most users):**
+**Ollama (Easiest for development):**
+```bash
+docker-compose -f docker-compose-development.yml up -d
+docker exec -it ollama-dev ollama pull llama3.2
+docker exec -it ollama-dev ollama run llama3.2
+```
+
+**llama.cpp (General-purpose):**
+```bash
+mkdir -p models  # Place your .gguf models here
+docker-compose -f docker-compose-llama.yml up -d
+```
+
+**vLLM (Production/high performance):**
+```bash
+mkdir -p models hf-cache  # Place your HuggingFace models here
+docker-compose -f docker-compose-production.yml up -d
+```
+
+See Docker Compose files for detailed configuration and usage examples.
+
+### Using Docker CLI
+
+**llama.cpp:**
 ```bash
 docker run -d \
   --device=/dev/kfd --device=/dev/dri \
@@ -39,7 +62,7 @@ docker run -d \
   -m /data/model.gguf --host 0.0.0.0
 ```
 
-**Ollama (Easiest setup):**
+**Ollama:**
 ```bash
 docker run -d \
   --device=/dev/kfd --device=/dev/dri \
@@ -49,7 +72,7 @@ docker run -d \
   ollama/ollama:rocm
 ```
 
-**vLLM (Production/high performance):**
+**vLLM:**
 ```bash
 docker run -d \
   --device=/dev/kfd --device=/dev/dri \
