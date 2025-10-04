@@ -1,0 +1,98 @@
+# Docker Compose for llama.cpp with ROCm
+# Recommended for most users - General-purpose local inference
+# Usage: docker-compose -f docker-compose-llama.yml up -d
+
+version: '3.8'
+
+services:
+  llama-server:
+    image: rocm/llama.cpp:llama.cpp-b5997_rocm6.4.0_ubuntu24.04_server
+    container_name: llama-server
+
+    # GPU device access - Manual device mounting (simplest method)
+    devices:
+      - /dev/kfd
+      - /dev/dri
+
+    # Security and performance options
+    security_opt:
+      - seccomp=unconfined
+
+    # Add video group for GPU access
+    group_add:
+      - video
+
+    # Enable shared memory for multi-GPU/multi-process
+    ipc: host
+
+    # Increase shared memory for large models
+    shm_size: 16g
+
+    # Volume mount for GGUF models
+    # Create ./models directory and place your .gguf files there
+    volumes:
+      - ./models:/data:ro
+
+    # Expose llama.cpp server API port
+    ports:
+      - "8000:8000"
+
+    # Environment variables
+    environment:
+      - HIP_VISIBLE_DEVICES=0
+
+    # Server startup command
+    # IMPORTANT: Replace /data/model.gguf with your actual model filename
+    # Example model names:
+    #   - llama-2-7b-chat.Q4_K_M.gguf
+    #   - mistral-7b-instruct-v0.2.Q4_K_M.gguf
+    #   - llama-3-8b.Q4_K_M.gguf
+    command:
+      - "-m"
+      - "/data/model.gguf"              # Replace with your model filename
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "8000"
+      - "-ngl"
+      - "99"                             # Load all layers to GPU
+      - "-c"
+      - "4096"                           # Context size (adjust based on VRAM)
+      - "--n-gpu-layers"
+      - "99"
+
+    # Restart policy
+    restart: unless-stopped
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# Setup instructions:
+# 1. Create models directory:
+#    mkdir -p models
+#
+# 2. Download a GGUF model (Q4_K_M recommended for balance):
+#    Example sources:
+#    - https://huggingface.co/TheBloke
+#    - https://huggingface.co/models?library=gguf
+#
+# 3. Update the command section above with your model filename
+#
+# 4. Start the service:
+#    docker-compose -f docker-compose-llama.yml up -d
+#
+# 5. View logs:
+#    docker-compose -f docker-compose-llama.yml logs -f
+#
+# 6. Test the API:
+#    curl http://localhost:8000/v1/chat/completions \
+#      -H "Content-Type: application/json" \
+#      -d '{"messages": [{"role": "user", "content": "Hello!"}]}'
+#
+# 7. Stop the service:
+#    docker-compose -f docker-compose-llama.yml down
