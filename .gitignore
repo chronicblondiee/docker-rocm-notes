@@ -8,6 +8,10 @@ hf-cache/
 # Docker volumes
 ollama-data/
 
+# Test results
+load-test-results-*.txt
+concurrency-test-*.txt
+
 # Operating System
 .DS_Store
 Thumbs.db

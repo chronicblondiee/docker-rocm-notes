@@ -182,6 +182,20 @@ docker run --runtime=amd -e AMD_VISIBLE_DEVICES=0 <image>
 docker run --device=/dev/kfd --device=/dev/dri --group-add video <image>
 ```
 
+## Testing
+
+See [llama-tests/](llama-tests/) directory for test scripts:
+
+- **test-llama.sh** - Basic functionality and API validation
+- **load-test-llama.sh** - Load testing and performance benchmarks
+- **concurrency-test-llama.sh** - Parallel vs sequential execution analysis
+
+Quick test:
+```bash
+cd llama-tests
+./test-llama.sh
+```
+
 ## Common Issues
 
 **GPU not detected:** Verify kernel driver loaded (`lsmod | grep amdgpu`) and device nodes exist (`ls -la /dev/kfd /dev/dri/`)

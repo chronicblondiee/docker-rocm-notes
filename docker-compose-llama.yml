@@ -58,6 +58,8 @@ services:
       - "${CONTEXT_SIZE:-4096}"          # Context size (adjust based on VRAM)
       - "--n-gpu-layers"
       - "${GPU_LAYERS:-99}"
+      - "--parallel"
+      - "${PARALLEL_SLOTS:-1}"           # Number of parallel request slots
 
     # Restart policy
     restart: unless-stopped
@@ -79,6 +81,9 @@ services:
 # GPU_ID          - GPU device ID (default: 0)
 # GPU_LAYERS      - Number of layers to offload to GPU (default: 99)
 # CONTEXT_SIZE    - Context window size (default: 4096)
+# PARALLEL_SLOTS  - Number of parallel request slots (default: 1)
+#                   Set to 2-4 for concurrent request handling
+#                   Higher values = more concurrent requests but more VRAM usage
 #
 # Setup instructions:
 #
