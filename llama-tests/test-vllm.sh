@@ -5,7 +5,7 @@
 set -e
 
 # Configuration
-COMPOSE_FILE="docker-compose-production.yml"
+COMPOSE_FILE="docker-compose-vllm.yml"
 CONTAINER_NAME="vllm-production"
 API_URL="${API_URL:-http://localhost:8001}"
 TIMEOUT=300  # seconds to wait for server to start (vLLM takes longer)
@@ -88,7 +88,7 @@ else
     cd llama-tests
     echo ""
     print_info "The model may still be downloading. Check logs with:"
-    echo "   docker-compose -f docker-compose-production.yml logs -f"
+    echo "   docker-compose -f docker-compose-vllm.yml logs -f"
     exit 1
 fi
 echo ""
@@ -195,8 +195,8 @@ print_status 0 "vLLM service is running and responding"
 print_info "API available at: $API_URL"
 print_info "Model: $MODEL_ID"
 echo ""
-print_info "View logs: docker-compose -f docker-compose-production.yml logs -f"
-print_info "Stop service: docker-compose -f docker-compose-production.yml down"
+print_info "View logs: docker-compose -f docker-compose-vllm.yml logs -f"
+print_info "Stop service: docker-compose -f docker-compose-vllm.yml down"
 echo ""
 echo "Example API calls:"
 echo ""

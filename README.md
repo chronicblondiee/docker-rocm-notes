@@ -34,7 +34,7 @@ All Docker Compose files support environment variable configuration. See [.env.e
 
 **Ollama (Easiest for development):**
 ```bash
-docker-compose -f docker-compose-development.yml up -d
+docker-compose -f docker-compose-ollama.yml up -d
 docker exec -it ollama-dev ollama pull llama3.2
 docker exec -it ollama-dev ollama run llama3.2
 ```
@@ -42,13 +42,13 @@ docker exec -it ollama-dev ollama run llama3.2
 **llama.cpp (General-purpose):**
 ```bash
 mkdir -p models  # Place your .gguf models here
-docker-compose -f docker-compose-llama.yml up -d
+docker-compose -f docker-compose-llamacpp.yml up -d
 ```
 
 **vLLM (Production/high performance):**
 ```bash
 mkdir -p models hf-cache  # Place your HuggingFace models here
-docker-compose -f docker-compose-production.yml up -d
+docker-compose -f docker-compose-vllm.yml up -d
 ```
 
 **Custom Configuration:**
@@ -71,7 +71,7 @@ docker-compose -f docker-compose-production.yml up -d
 
 3. Start the service (automatically reads `.env`):
    ```bash
-   docker-compose -f docker-compose-llama.yml up -d
+   docker-compose -f docker-compose-llamacpp.yml up -d
    ```
 
 **Method 2: Using environment variables**
@@ -80,13 +80,13 @@ docker-compose -f docker-compose-production.yml up -d
 export MODELS_DIR="$HOME/.lmstudio/models"
 export MODEL_PATH="/data/model-dir/model.gguf"
 export GPU_ID=0
-docker-compose -f docker-compose-llama.yml up -d
+docker-compose -f docker-compose-llamacpp.yml up -d
 ```
 
 **Method 3: Inline variables**
 
 ```bash
-MODELS_DIR=./models MODEL_PATH=/data/my-model.gguf docker-compose -f docker-compose-llama.yml up -d
+MODELS_DIR=./models MODEL_PATH=/data/my-model.gguf docker-compose -f docker-compose-llamacpp.yml up -d
 ```
 
 **Key environment variables:**

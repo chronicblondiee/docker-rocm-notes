@@ -5,7 +5,7 @@
 set -e
 
 # Configuration
-COMPOSE_FILE="docker-compose-llama.yml"
+COMPOSE_FILE="docker-compose-llamacpp.yml"
 CONTAINER_NAME="llama-server"
 API_URL="http://localhost:8000"
 TIMEOUT=120  # seconds to wait for server to start

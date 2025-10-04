@@ -113,7 +113,7 @@ cd llama-tests
 
 # Enable parallel processing
 echo "PARALLEL_SLOTS=4" >> ../.env
-docker-compose -f ../docker-compose-llama.yml restart
+docker-compose -f ../docker-compose-llamacpp.yml restart
 
 # Test again to see improvement
 ./concurrency-test-llama.sh

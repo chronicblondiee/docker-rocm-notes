@@ -69,7 +69,7 @@ if curl -sf "$API_URL/health" > /dev/null 2>&1; then
     print_status 0 "Server is responding"
 else
     print_status 1 "Server is not responding at $API_URL"
-    echo "   Please start the server first: docker-compose -f docker-compose-llama.yml up -d"
+    echo "   Please start the server first: docker-compose -f docker-compose-llamacpp.yml up -d"
     exit 1
 fi
 echo ""
@@ -270,5 +270,5 @@ echo "  - Increase GPU layers: GPU_LAYERS=99 in .env"
 echo "  - Use quantized models (Q4_K_M or Q5_K_M)"
 echo "  - Reduce context size if not needed: CONTEXT_SIZE=2048"
 echo "  - Monitor GPU usage: rocm-smi"
-echo "  - Check container logs: docker-compose -f docker-compose-llama.yml logs"
+echo "  - Check container logs: docker-compose -f docker-compose-llamacpp.yml logs"
 echo ""

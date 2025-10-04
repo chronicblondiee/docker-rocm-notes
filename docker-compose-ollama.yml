@@ -1,6 +1,7 @@
-# Docker Compose for Ollama with ROCm (Development Setup)
-# Recommended for development - Easiest to use, auto-downloads models
-# Usage: docker-compose -f docker-compose-development.yml up -d
+# Docker Compose for Ollama with ROCm
+# Backend: Ollama
+# Use Case: Development - Easiest to use, auto-downloads models
+# Usage: docker-compose -f docker-compose-ollama.yml up -d
 
 version: '3.8'
 
@@ -54,7 +55,7 @@ volumes:
 # Quick start guide:
 #
 # 1. Start Ollama:
-#    docker-compose -f docker-compose-development.yml up -d
+#    docker-compose -f docker-compose-ollama.yml up -d
 #
 # 2. Pull a model (run from host):
 #    docker exec -it ollama-dev ollama pull llama3.2

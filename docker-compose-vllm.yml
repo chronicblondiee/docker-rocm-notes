@@ -1,6 +1,7 @@
-# Docker Compose for vLLM with ROCm (Production Setup)
-# Recommended for production - Highest performance, OpenAI-compatible API
-# Usage: docker-compose -f docker-compose-production.yml up -d
+# Docker Compose for vLLM with ROCm
+# Backend: vLLM
+# Use Case: Production - Highest performance, OpenAI-compatible API
+# Usage: docker-compose -f docker-compose-vllm.yml up -d
 
 version: '3.8'
 
@@ -111,7 +112,7 @@ services:
 #    export HF_TOKEN="your_huggingface_token"
 #
 # 2. Start the service:
-#    docker-compose -f docker-compose-production.yml up -d
+#    docker-compose -f docker-compose-vllm.yml up -d
 #
 # Method 2: Using .env file
 # 1. Create a .env file:
@@ -130,7 +131,7 @@ services:
 #    EOF
 #
 # 2. Start the service:
-#    docker-compose -f docker-compose-production.yml up -d
+#    docker-compose -f docker-compose-vllm.yml up -d
 #
 # Method 3: Download model using HuggingFace ID
 # 1. Set HF token and model ID:
@@ -139,7 +140,7 @@ services:
 #    export ROCM_ARCH="gfx1100"
 #
 # 2. Start (vLLM will auto-download):
-#    docker-compose -f docker-compose-production.yml up -d
+#    docker-compose -f docker-compose-vllm.yml up -d
 #
 # Method 4: Default setup with local models
 # 1. Create directories and download model:
@@ -148,11 +149,11 @@ services:
 #    git clone https://huggingface.co/meta-llama/Llama-2-7b-chat-hf models/llama-2-7b-hf
 #
 # 2. Start the service:
-#    docker-compose -f docker-compose-production.yml up -d
+#    docker-compose -f docker-compose-vllm.yml up -d
 #
 # Common Commands:
 # - View logs:
-#   docker-compose -f docker-compose-production.yml logs -f
+#   docker-compose -f docker-compose-vllm.yml logs -f
 #
 # - Test the API (OpenAI-compatible):
 #   curl http://localhost:8000/v1/chat/completions \
@@ -160,7 +161,7 @@ services:
 #     -d '{"model": "your-model-name", "messages": [{"role": "user", "content": "Hello!"}]}'
 #
 # - Stop the service:
-#   docker-compose -f docker-compose-production.yml down
+#   docker-compose -f docker-compose-vllm.yml down
 #
 # Multi-GPU setup:
 # - Set GPU_ID=0,1 for 2 GPUs
