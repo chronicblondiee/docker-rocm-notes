@@ -206,6 +206,25 @@ cd llama-tests
 
 **Slow performance:** Verify GPU usage with `rocm-smi` and ensure GPU layers enabled (`-ngl 99`)
 
+### Model Compatibility Issues
+
+**IBM Granite 4.0 H Tiny + vLLM on ROCm:**
+
+IBM Granite 4.0 H Tiny (and potentially other Granite models) are incompatible with vLLM on ROCm due to flash attention kernel failures. This is caused by:
+
+1. **Non-power-of-2 attention block sizes**: Granite uses 400-token blocks, incompatible with Triton kernels which require power-of-2 sizes
+2. **Hybrid MoE architecture incompatibilities**: The model's hybrid Mixture-of-Experts design triggers kernel compilation errors
+3. **ROCm flash attention limitations**: Both Triton and ROCm Flash Attention backends fail with `HIP Function Failed - invalid device function`
+
+**Attempted workarounds (all failed):**
+- `--enforce-eager` flag
+- `VLLM_USE_TRITON_FLASH_ATTN=0`
+- `VLLM_ATTENTION_BACKEND=TORCH_SDPA` (not supported on AMD)
+- `VLLM_ATTENTION_BACKEND=ROCM_FLASH`
+- `VLLM_USE_V1=0` (V0 engine)
+
+**Solution:** Use llama.cpp for Granite models (works perfectly with GGUF format), and use vLLM with tested-compatible models like TinyLlama, Llama-2, Llama-3, Mistral, or Qwen.
+
 See [ROCM_DOCKER_GUIDE.md](ROCM_DOCKER_GUIDE.md) for detailed troubleshooting.
 
 ## License

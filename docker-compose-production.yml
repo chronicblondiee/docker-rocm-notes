@@ -62,6 +62,8 @@ services:
       --max-num-seqs ${MAX_SEQS:-256}
       --max-model-len ${MAX_CONTEXT:-4096}
       --gpu-memory-utilization ${GPU_MEM_UTIL:-0.9}
+      --enforce-eager
+      --disable-log-requests
 
     # Restart policy
     restart: unless-stopped
