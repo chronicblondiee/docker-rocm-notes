@@ -53,21 +53,15 @@ services:
     # vLLM server startup command
     # Set MODEL_NAME to your model path inside container or HuggingFace model ID
     # Examples: /models/llama-2-7b-hf or meta-llama/Llama-2-7b-chat-hf
-    command:
-      - "--model"
-      - "${MODEL_NAME:-/models/llama-2-7b-hf}"
-      - "--host"
-      - "0.0.0.0"
-      - "--port"
-      - "8000"
-      - "--tensor-parallel-size"
-      - "${TENSOR_PARALLEL:-1}"                 # Number of GPUs for tensor parallelism
-      - "--max-num-seqs"
-      - "${MAX_SEQS:-256}"                      # Max concurrent sequences
-      - "--max-model-len"
-      - "${MAX_CONTEXT:-4096}"                  # Max context length
-      - "--gpu-memory-utilization"
-      - "${GPU_MEM_UTIL:-0.9}"                  # GPU memory usage (0.0-1.0)
+    command: >
+      python3 -m vllm.entrypoints.openai.api_server
+      --model ${MODEL_NAME:-/models/llama-2-7b-hf}
+      --host 0.0.0.0
+      --port 8000
+      --tensor-parallel-size ${TENSOR_PARALLEL:-1}
+      --max-num-seqs ${MAX_SEQS:-256}
+      --max-model-len ${MAX_CONTEXT:-4096}
+      --gpu-memory-utilization ${GPU_MEM_UTIL:-0.9}
 
     # Restart policy
     restart: unless-stopped
