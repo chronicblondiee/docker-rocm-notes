@@ -53,29 +53,50 @@ docker-compose -f docker-compose-production.yml up -d
 
 **Custom Configuration:**
 
-Use environment variables or create a `.env` file:
+**Method 1: Using a .env file (Recommended)**
+
+1. Create your `.env` file from the example:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Edit `.env` with your settings:
+   ```bash
+   # Example for llama.cpp with local models
+   MODELS_DIR=./models
+   MODEL_PATH=/data/granite-4.0-h-tiny-Q4_K_M.gguf
+   LLAMA_PORT=8000
+   GPU_ID=0
+   ```
+
+3. Start the service (automatically reads `.env`):
+   ```bash
+   docker-compose -f docker-compose-llama.yml up -d
+   ```
+
+**Method 2: Using environment variables**
 
 ```bash
-# Method 1: Environment variables
 export MODELS_DIR="$HOME/.lmstudio/models"
 export MODEL_PATH="/data/model-dir/model.gguf"
 export GPU_ID=0
 docker-compose -f docker-compose-llama.yml up -d
+```
 
-# Method 2: .env file
-cp .env.example .env
-# Edit .env with your settings
-docker-compose -f docker-compose-llama.yml up -d
+**Method 3: Inline variables**
+
+```bash
+MODELS_DIR=./models MODEL_PATH=/data/my-model.gguf docker-compose -f docker-compose-llama.yml up -d
 ```
 
 **Key environment variables:**
-- `MODELS_DIR` - Host directory containing models
-- `MODEL_PATH` - Path to model file inside container
-- `GPU_ID` - GPU device ID (0, 1, or "0,1" for multi-GPU)
-- `ROCM_ARCH` - GPU architecture (gfx1100 for RX 7900 XTX)
-- `HF_TOKEN` - HuggingFace token for gated models
+- `MODELS_DIR` - Host directory containing models (default: `./models`)
+- `MODEL_PATH` - Path to model file inside container (default: `/data/model.gguf`)
+- `GPU_ID` - GPU device ID: `0`, `1`, or `"0,1"` for multi-GPU (default: `0`)
+- `ROCM_ARCH` - GPU architecture, e.g., `gfx1100` for RX 7900 XTX (default: `gfx1100`)
+- `HF_TOKEN` - HuggingFace token for gated models (vLLM only)
 
-See Docker Compose files and [.env.example](.env.example) for all configuration options.
+See [.env.example](.env.example) for all available configuration options and examples.
 
 ### Using Docker CLI
 
