@@ -35,40 +35,39 @@ services:
     # Volume mount for HuggingFace format models
     # Mount as read-only for security
     volumes:
-      - ./models:/models:ro
+      - ${MODELS_DIR:-./models}:/models:ro
       # Optional: Cache directory for HuggingFace downloads
-      - ./hf-cache:/root/.cache/huggingface
+      - ${HF_CACHE_DIR:-./hf-cache}:/root/.cache/huggingface
 
     # Expose vLLM server API port (OpenAI-compatible)
     ports:
-      - "8000:8000"
+      - "${VLLM_PORT:-8000}:8000"
 
     # Environment variables
     environment:
-      - HIP_VISIBLE_DEVICES=0           # GPU selection (0 = first GPU, 0,1 = multi-GPU)
-      - PYTORCH_ROCM_ARCH=gfx1100       # Set to your GPU architecture
+      - HIP_VISIBLE_DEVICES=${GPU_ID:-0}        # GPU selection (0 = first GPU, 0,1 = multi-GPU)
+      - PYTORCH_ROCM_ARCH=${ROCM_ARCH:-gfx1100} # Set to your GPU architecture
       # Optional: HuggingFace token for gated models
-      # - HUGGING_FACE_HUB_TOKEN=your_token_here
+      - HUGGING_FACE_HUB_TOKEN=${HF_TOKEN:-}
 
     # vLLM server startup command
-    # IMPORTANT: Replace /models/llama-2-7b-hf with your model path
-    # Supported models: LLaMA, Mistral, Mixtral, Qwen, etc.
+    # Set MODEL_NAME to your model path inside container or HuggingFace model ID
+    # Examples: /models/llama-2-7b-hf or meta-llama/Llama-2-7b-chat-hf
     command:
       - "--model"
-      - "/models/llama-2-7b-hf"         # Replace with your model path/name
+      - "${MODEL_NAME:-/models/llama-2-7b-hf}"
       - "--host"
       - "0.0.0.0"
       - "--port"
       - "8000"
       - "--tensor-parallel-size"
-      - "1"                              # Number of GPUs for tensor parallelism
-      # Optional performance tuning:
-      # - "--max-num-seqs"
-      # - "256"                          # Max concurrent sequences
-      # - "--max-model-len"
-      # - "4096"                         # Max context length
-      # - "--gpu-memory-utilization"
-      # - "0.9"                          # GPU memory usage (0.0-1.0)
+      - "${TENSOR_PARALLEL:-1}"                 # Number of GPUs for tensor parallelism
+      - "--max-num-seqs"
+      - "${MAX_SEQS:-256}"                      # Max concurrent sequences
+      - "--max-model-len"
+      - "${MAX_CONTEXT:-4096}"                  # Max context length
+      - "--gpu-memory-utilization"
+      - "${GPU_MEM_UTIL:-0.9}"                  # GPU memory usage (0.0-1.0)
 
     # Restart policy
     restart: unless-stopped
@@ -81,7 +80,22 @@ services:
       retries: 3
       start_period: 60s
 
-# GPU Architecture values (update PYTORCH_ROCM_ARCH environment variable):
+# Environment Variables:
+# All variables have defaults - override by setting them before running docker-compose
+#
+# MODELS_DIR      - Host directory containing your models (default: ./models)
+# HF_CACHE_DIR    - HuggingFace cache directory (default: ./hf-cache)
+# MODEL_NAME      - Model path in container or HF model ID (default: /models/llama-2-7b-hf)
+# VLLM_PORT       - Host port to expose (default: 8000)
+# GPU_ID          - GPU device ID (default: 0, use "0,1" for multi-GPU)
+# ROCM_ARCH       - GPU architecture (default: gfx1100)
+# HF_TOKEN        - HuggingFace API token for gated models (default: empty)
+# TENSOR_PARALLEL - Number of GPUs for tensor parallelism (default: 1)
+# MAX_SEQS        - Max concurrent sequences (default: 256)
+# MAX_CONTEXT     - Max context length (default: 4096)
+# GPU_MEM_UTIL    - GPU memory utilization 0.0-1.0 (default: 0.9)
+#
+# GPU Architecture values for ROCM_ARCH:
 # - gfx906   : AMD Instinct MI50
 # - gfx908   : AMD Instinct MI100
 # - gfx90a   : AMD Instinct MI210/MI250/MI250X
@@ -90,50 +104,69 @@ services:
 # - gfx1100  : Radeon RX 7900 XTX/XT
 # - gfx1101  : Radeon RX 7800/7700 XT
 # - gfx1102  : Radeon RX 7600
-
-# Setup instructions:
-# 1. Create directories:
-#    mkdir -p models hf-cache
 #
-# 2. Download a HuggingFace model:
-#    # Option A: Download manually
+# Setup instructions:
+#
+# Method 1: Using environment variables (recommended)
+# 1. Set environment variables:
+#    export MODELS_DIR="$HOME/models"
+#    export MODEL_NAME="/models/llama-2-7b-chat-hf"
+#    export ROCM_ARCH="gfx1100"
+#    export HF_TOKEN="your_huggingface_token"
+#
+# 2. Start the service:
+#    docker-compose -f docker-compose-production.yml up -d
+#
+# Method 2: Using .env file
+# 1. Create a .env file:
+#    cat > .env << EOF
+#    MODELS_DIR=/home/user/models
+#    HF_CACHE_DIR=/home/user/.cache/huggingface
+#    MODEL_NAME=/models/llama-2-7b-chat-hf
+#    VLLM_PORT=8000
+#    GPU_ID=0
+#    ROCM_ARCH=gfx1100
+#    HF_TOKEN=your_huggingface_token
+#    TENSOR_PARALLEL=1
+#    MAX_SEQS=256
+#    MAX_CONTEXT=4096
+#    GPU_MEM_UTIL=0.9
+#    EOF
+#
+# 2. Start the service:
+#    docker-compose -f docker-compose-production.yml up -d
+#
+# Method 3: Download model using HuggingFace ID
+# 1. Set HF token and model ID:
+#    export HF_TOKEN="your_token"
+#    export MODEL_NAME="meta-llama/Llama-2-7b-chat-hf"
+#    export ROCM_ARCH="gfx1100"
+#
+# 2. Start (vLLM will auto-download):
+#    docker-compose -f docker-compose-production.yml up -d
+#
+# Method 4: Default setup with local models
+# 1. Create directories and download model:
+#    mkdir -p models hf-cache
 #    git lfs install
 #    git clone https://huggingface.co/meta-llama/Llama-2-7b-chat-hf models/llama-2-7b-hf
 #
-#    # Option B: Let vLLM download automatically (requires HF token for gated models)
-#    # Just specify the model name like "meta-llama/Llama-2-7b-chat-hf"
-#
-# 3. Update the command section with your model path and GPU architecture
-#
-# 4. For gated models (LLaMA, etc.), set HUGGING_FACE_HUB_TOKEN
-#
-# 5. Start the service:
+# 2. Start the service:
 #    docker-compose -f docker-compose-production.yml up -d
 #
-# 6. View logs:
-#    docker-compose -f docker-compose-production.yml logs -f
+# Common Commands:
+# - View logs:
+#   docker-compose -f docker-compose-production.yml logs -f
 #
-# 7. Test the API (OpenAI-compatible):
-#    curl http://localhost:8000/v1/completions \
-#      -H "Content-Type: application/json" \
-#      -d '{
-#        "model": "/models/llama-2-7b-hf",
-#        "prompt": "Once upon a time",
-#        "max_tokens": 50
-#      }'
+# - Test the API (OpenAI-compatible):
+#   curl http://localhost:8000/v1/chat/completions \
+#     -H "Content-Type: application/json" \
+#     -d '{"model": "your-model-name", "messages": [{"role": "user", "content": "Hello!"}]}'
 #
-#    # Or chat completions:
-#    curl http://localhost:8000/v1/chat/completions \
-#      -H "Content-Type: application/json" \
-#      -d '{
-#        "model": "/models/llama-2-7b-hf",
-#        "messages": [{"role": "user", "content": "Hello!"}]
-#      }'
-#
-# 8. Stop the service:
-#    docker-compose -f docker-compose-production.yml down
+# - Stop the service:
+#   docker-compose -f docker-compose-production.yml down
 #
 # Multi-GPU setup:
-# - Set HIP_VISIBLE_DEVICES=0,1 for 2 GPUs
-# - Set --tensor-parallel-size to match number of GPUs
+# - Set GPU_ID=0,1 for 2 GPUs
+# - Set TENSOR_PARALLEL=2 to match number of GPUs
 # - Ensure sufficient system RAM and VRAM

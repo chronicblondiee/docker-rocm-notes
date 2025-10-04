@@ -20,17 +20,16 @@ services:
 
     # Persistent storage for models and configuration
     volumes:
-      - ollama-data:/root/.ollama
+      - ${OLLAMA_DATA:-ollama-data}:/root/.ollama
 
     # Expose Ollama API port
     ports:
-      - "11434:11434"
+      - "${OLLAMA_PORT:-11434}:11434"
 
     # Environment variables (optional)
     environment:
       - OLLAMA_HOST=0.0.0.0
-      # Optional: Set GPU selection
-      # - HIP_VISIBLE_DEVICES=0
+      - HIP_VISIBLE_DEVICES=${GPU_ID:-0}
 
     # Restart policy
     restart: unless-stopped
@@ -47,6 +46,11 @@ volumes:
   ollama-data:
     driver: local
 
+# Environment Variables:
+# OLLAMA_DATA  - Docker volume or host path for model storage (default: ollama-data named volume)
+# OLLAMA_PORT  - Host port to expose (default: 11434)
+# GPU_ID       - GPU device ID (default: 0)
+#
 # Quick start guide:
 #
 # 1. Start Ollama:
