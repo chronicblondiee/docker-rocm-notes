@@ -1,0 +1,20 @@
+# Model directories
+models/
+hf-cache/
+
+# Environment files
+.env
+
+# Docker volumes
+ollama-data/
+
+# Operating System
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
