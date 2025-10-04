@@ -28,6 +28,10 @@ No ROCm installation needed on host - all ROCm libraries run inside containers.
 
 ### Using Docker Compose (Recommended)
 
+All Docker Compose files support environment variable configuration. See [.env.example](.env.example) for all available options.
+
+**Quick Start (using defaults):**
+
 **Ollama (Easiest for development):**
 ```bash
 docker-compose -f docker-compose-development.yml up -d
@@ -47,7 +51,31 @@ mkdir -p models hf-cache  # Place your HuggingFace models here
 docker-compose -f docker-compose-production.yml up -d
 ```
 
-See Docker Compose files for detailed configuration and usage examples.
+**Custom Configuration:**
+
+Use environment variables or create a `.env` file:
+
+```bash
+# Method 1: Environment variables
+export MODELS_DIR="$HOME/.lmstudio/models"
+export MODEL_PATH="/data/model-dir/model.gguf"
+export GPU_ID=0
+docker-compose -f docker-compose-llama.yml up -d
+
+# Method 2: .env file
+cp .env.example .env
+# Edit .env with your settings
+docker-compose -f docker-compose-llama.yml up -d
+```
+
+**Key environment variables:**
+- `MODELS_DIR` - Host directory containing models
+- `MODEL_PATH` - Path to model file inside container
+- `GPU_ID` - GPU device ID (0, 1, or "0,1" for multi-GPU)
+- `ROCM_ARCH` - GPU architecture (gfx1100 for RX 7900 XTX)
+- `HF_TOKEN` - HuggingFace token for gated models
+
+See Docker Compose files and [.env.example](.env.example) for all configuration options.
 
 ### Using Docker CLI
 
