@@ -102,7 +102,7 @@ volumes:
 #      }'
 #
 # 6. View logs:
-#    docker-compose -f docker-compose-development.yml logs -f
+#    docker-compose -f docker-compose-ollama.yml logs -f
 #
 # 7. Remove a model:
 #    docker exec -it ollama-dev ollama rm llama3.2
@@ -111,10 +111,10 @@ volumes:
 #    docker exec -it ollama-dev ollama show llama3.2
 #
 # 9. Stop the service:
-#    docker-compose -f docker-compose-development.yml down
+#    docker-compose -f docker-compose-ollama.yml down
 #
 # 10. Stop and remove all data (models):
-#     docker-compose -f docker-compose-development.yml down -v
+#     docker-compose -f docker-compose-ollama.yml down -v
 #
 # Advanced usage:
 #
@@ -144,8 +144,99 @@ volumes:
 # - POST /api/embeddings     - Generate embeddings
 #
 # OpenAI-compatible endpoints:
-# - POST /v1/chat/completions
+# - POST /v1/chat/completions  (supports tool calling)
 # - POST /v1/completions
 # - POST /v1/embeddings
+# - GET  /v1/models
 #
 # For more info: https://github.com/ollama/ollama/blob/main/docs/api.md
+#
+# =============================================================================
+# OpenAI API Compatibility
+# =============================================================================
+#
+# Ollama provides full OpenAI-compatible API support at /v1/* endpoints
+# No special configuration needed - works out of the box!
+#
+# Using OpenAI Python SDK with Ollama:
+# -------------------------------------
+# from openai import OpenAI
+#
+# client = OpenAI(
+#     base_url="http://localhost:11434/v1",
+#     api_key="not-needed"  # Ollama doesn't require API key
+# )
+#
+# # Basic chat
+# response = client.chat.completions.create(
+#     model="llama3.1",
+#     messages=[{"role": "user", "content": "Hello!"}]
+# )
+#
+# # Chat with tool calling (requires Llama 3.1+, Mistral, etc.)
+# tools = [{
+#     "type": "function",
+#     "function": {
+#         "name": "get_weather",
+#         "description": "Get current weather in a location",
+#         "parameters": {
+#             "type": "object",
+#             "properties": {
+#                 "location": {"type": "string", "description": "City name"}
+#             },
+#             "required": ["location"]
+#         }
+#     }
+# }]
+#
+# response = client.chat.completions.create(
+#     model="llama3.1",
+#     messages=[{"role": "user", "content": "What's the weather in Tokyo?"}],
+#     tools=tools
+# )
+#
+# Tool Calling with Native Ollama API:
+# -------------------------------------
+# curl http://localhost:11434/api/chat -d '{
+#   "model": "llama3.1",
+#   "messages": [{"role": "user", "content": "What is the weather in Paris?"}],
+#   "stream": false,
+#   "tools": [{
+#     "type": "function",
+#     "function": {
+#       "name": "get_weather",
+#       "description": "Get current weather",
+#       "parameters": {
+#         "type": "object",
+#         "properties": {
+#           "location": {"type": "string"}
+#         },
+#         "required": ["location"]
+#       }
+#     }
+#   }]
+# }'
+#
+# Tool Calling Compatible Models:
+# --------------------------------
+# Pull these models with: docker exec -it ollama-dev ollama pull <model>
+#
+# - llama3.1:8b         - Best overall choice for tool calling
+# - llama3.3:70b        - Highest quality (requires more VRAM)
+# - mistral-nemo        - Excellent 12B model with tool support
+# - qwen2.5:7b          - Good multilingual support
+# - firefunction-v2     - Specialized for function calling
+#
+# Features supported in OpenAI API mode:
+# ---------------------------------------
+# ✅ Chat completions (/v1/chat/completions)
+# ✅ Text completions (/v1/completions)
+# ✅ Embeddings (/v1/embeddings)
+# ✅ Tool/function calling (automatic with compatible models)
+# ✅ Streaming responses
+# ✅ JSON mode (response_format)
+# ✅ Vision (with vision-capable models like llama3.2-vision)
+# ✅ System messages
+# ✅ Temperature, top_p, and other parameters
+#
+# For complete OpenAI API documentation, see: OPENAI_API_GUIDE.md

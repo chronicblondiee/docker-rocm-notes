@@ -152,6 +152,94 @@ docker run -d \
 | **Ollama** | Development | GGUF (auto-convert) | Easy | Good |
 | **vLLM** | Production API | HuggingFace | Medium | Excellent |
 
+## OpenAI API Compatibility
+
+All backends provide **OpenAI-compatible APIs**, allowing you to use the official OpenAI SDK or any compatible client library with locally hosted models.
+
+### Supported Features
+
+| Feature | llama.cpp | Ollama | vLLM | Notes |
+|---------|-----------|--------|------|-------|
+| `/v1/chat/completions` | ✅ | ✅ | ✅ | Full support with streaming |
+| `/v1/completions` | ✅ | ✅ | ✅ | Legacy text completion |
+| `/v1/embeddings` | ✅ | ✅ | ✅ | Text embeddings |
+| **Tool/Function Calling** | ✅ * | ✅ | ✅ | *Requires `--jinja` flag |
+| **Streaming** | ✅ | ✅ | ✅ | Server-sent events |
+| **JSON Mode** | ✅ | ✅ | ✅ | Structured output |
+
+\* llama.cpp requires `--jinja` flag - **already configured** in [docker-compose-llamacpp.yml](docker-compose-llamacpp.yml)
+
+### Quick Start with OpenAI SDK
+
+**Python Example:**
+```python
+from openai import OpenAI
+
+# llama.cpp
+client = OpenAI(
+    base_url="http://localhost:8000/v1",
+    api_key="not-needed"
+)
+
+# Ollama
+# client = OpenAI(
+#     base_url="http://localhost:11434/v1",
+#     api_key="not-needed"
+# )
+
+# Chat
+response = client.chat.completions.create(
+    model="gpt-3.5-turbo",
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+print(response.choices[0].message.content)
+
+# Tool calling (requires compatible model like Llama 3.1+)
+tools = [{
+    "type": "function",
+    "function": {
+        "name": "get_weather",
+        "description": "Get current weather",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "location": {"type": "string"}
+            },
+            "required": ["location"]
+        }
+    }
+}]
+
+response = client.chat.completions.create(
+    model="gpt-3.5-turbo",
+    messages=[{"role": "user", "content": "What's the weather in Paris?"}],
+    tools=tools
+)
+```
+
+### Tool/Function Calling Setup
+
+**llama.cpp:**
+- ✅ `--jinja` flag enabled by default in our docker-compose
+- ✅ Use compatible model (Llama 3.1+, Mistral Nemo, Qwen 2.5, Hermes)
+- ✅ Q4_K_M or higher quantization recommended
+
+**Ollama:**
+- ✅ No setup required - works automatically
+- ✅ Pull a compatible model: `docker exec -it ollama-dev ollama pull llama3.1`
+
+**Recommended Models for Tool Calling:**
+- **Llama 3.1 / 3.3** (8B, 70B) - Best overall choice
+- **Mistral Nemo** (12B) - Excellent performance
+- **Qwen 2.5** (7B, 14B, 32B) - Great multilingual support
+- **Hermes 2/3** - Function calling focused
+
+**Not Compatible:**
+- ❌ Granite models (no tool support)
+- ❌ Llama 3.2 1B/3B (no tool support)
+
+📖 **For complete documentation, examples, and troubleshooting, see [OPENAI_API_GUIDE.md](OPENAI_API_GUIDE.md)**
+
 ## Documentation Resources
 
 ### AMD Official Docs
